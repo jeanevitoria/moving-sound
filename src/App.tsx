@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Collapse from '@mui/material/Collapse';
 import CloseIcon from '@mui/icons-material/Close';
 import LinearProgress from '@mui/material/LinearProgress';
-import { generateYoutubePlaylist, OAuthGoogle, searchSpotifyPlaylist } from './services/api';
+import { generateYoutubePlaylist, searchSpotifyPlaylist } from './services/api';
 import VideoCard from './components/VideoCard';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,32 +30,6 @@ function App() {
 
     console.log(tracks)
     generatePlaylist();
-  }
-
-  const OAuth = async () => {
-    const temp_session_id = uuidv4();
-    sessionStorage.setItem('temp_session_id', temp_session_id);
-
-    const channel = new BroadcastChannel('oauth_channel');
-
-    channel.onmessage = (event) => {
-      const { type, access_token, temp_session_id } = event.data;
-      const user_temp_id = sessionStorage.getItem('temp_session_id')
-
-      if (type === 'oauth_success' && access_token && user_temp_id === temp_session_id) {
-        setAccessToken(access_token)
-
-        sessionStorage.removeItem('temp_session_id')
-        channel.close();
-      }
-    };
-
-    await OAuthGoogle(temp_session_id)
-
-    return () => {
-      channel.close();
-    };
-
   }
 
   useEffect(() => {
@@ -225,7 +199,6 @@ function App() {
         <Box sx={{ marginBottom: '20px', my: 3 }}>
           <Stack direction="column" alignContent={'center'} justifyContent={'center'} >
             <Collapse in={open}>
-              {accessToken == '' ? (
                 <Alert
                   severity='info'
                   action={
@@ -244,15 +217,8 @@ function App() {
                   }
                   sx={{ my: 3 }}
                 >
-                  <Typography textAlign={'left'} variant='subtitle2'>Faça login com uma conta Google para salvar a playlist completa no Youtube ou continue com um limite de até 200 músicas geradas.</Typography>
-                  <Button size='small' variant='contained' sx={{ color: 'white', display: 'flex', right: 0, ml: 'auto', mt: 1 }} onClick={() => OAuth()}>Login com Google</Button>
+                  <Typography textAlign={'left'} variant='subtitle2'>Devido a limitações da API do Youtube, há um limite de 200 músicas por playlist.</Typography>
                 </Alert>
-              ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-                  <Button size='small' variant='outlined' sx={{ color: 'white', borderColor: 'white' ,display: 'flex', left: 0, mt: 1 }} onClick={() => OAuth()}>Trocar de conta</Button>
-                  <Button size='small' disabled={videos.length == 0} variant='contained' sx={{ color: 'white', display: 'flex', right: 0, mt: 1 }} onClick={() => OAuth()}>Salvar playlist</Button>
-                </Box>
-              )}
             </Collapse>
             {videos.length > 0 && (
               <VideoCard videos={videos} />

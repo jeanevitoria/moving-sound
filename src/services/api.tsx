@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useEffect } from "react";
 
 interface tokenProps {
     access_token: string,
@@ -74,12 +73,3 @@ export const generateYoutubePlaylist = async (searchFields: string[]) => {
         .then((res) => res.data)
         .catch((err) => console.error(err))
 }
-
-export const OAuthGoogle = async (temp_session_id: string) => {
-    const popUp = window.open(
-        `http://localhost:8000/oauth/${temp_session_id}`,
-        "oauthPopup",
-        "width=500,height=600"
-    );
-    
-};
