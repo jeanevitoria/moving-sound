@@ -1,35 +1,18 @@
 import axios from "axios";
+import { useEffect } from "react";
 
-interface YoutubeResponse {
-    etag: string,
-    items: Item[]
-}
-
-interface Item {
-    etag: string,
-    id: id,
-    kind: string,
-    snippet: Snippet
-}
-
-interface Snippet {
-    channelId: string,
-    channelTitle: string,
-    description: string,
-    title: string
-}
-
-interface id {
-    kind: string,
-    videoId: string
+interface tokenProps {
+    access_token: string,
+    expires_in: number,
+    token_type: string
 }
 
 export const getSpotifyToken = async () => {
     try {
-        const res = await axios.post('http://localhost:8000/spotify/get-token/');
+        const res = await axios.post<tokenProps>('http://localhost:8000/spotify/get-token/');
         console.log(res)
         localStorage.setItem('token', res.data.access_token);
-        return res.data;
+        return res.data.access_token;
     } catch (err) {
         console.error("Erro ao obter novo token:", err);
         throw err; // Se falhar, propaga o erro
@@ -73,7 +56,7 @@ export const searchSpotifyPlaylist = async (playlist_id: string | undefined) => 
         const newToken = await getSpotifyToken();
         token = newToken;
     }
-
+    console.log("token: " + token)
     return apiSpotify.get(`${playlist_id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -81,24 +64,22 @@ export const searchSpotifyPlaylist = async (playlist_id: string | undefined) => 
         .catch(err => console.error("Erro ao buscar playlist:", err));
 };
 
-// export const generateYoutubePlaylist = async (searchFields: string) => {
-//     console.log("chegou: " + searchFields)
-//     return axios.post<YoutubeResponse>(`http://localhost:8000/youtube/youtube_search/`, { search_data: searchFields }, {
-//         headers: {
-//             'Content-Type': 'application/json',
-//         }
-//     })
-//         .then((res) => res)
-//         .catch((err) => console.error(err))
-// }
-
-export const generateYoutubePlaylist = async (searchFields: string) => {
+export const generateYoutubePlaylist = async (searchFields: string[]) => {
     console.log("chegou: " + searchFields)
-    return axios.post<YoutubeResponse>(`http://localhost:8000/crawler/youtube-search/`, { search_data: searchFields }, {
+    return axios.post<string[]>(`http://localhost:8000/crawler/youtube-search/`, { search_data: searchFields }, {
         headers: {
             'Content-Type': 'application/json',
         }
     })
-        .then((res) => res)
+        .then((res) => res.data)
         .catch((err) => console.error(err))
 }
+
+export const OAuthGoogle = async (temp_session_id: string) => {
+    const popUp = window.open(
+        `http://localhost:8000/oauth/${temp_session_id}`,
+        "oauthPopup",
+        "width=500,height=600"
+    );
+    
+};

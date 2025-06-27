@@ -2,194 +2,22 @@ import { useEffect, useState } from 'react'
 import { Box, Button, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import background from './assets/office.png';
-import { generateYoutubePlaylist, searchSpotifyPlaylist } from './services/api';
+import Alert from '@mui/material/Alert';
+import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
+import CloseIcon from '@mui/icons-material/Close';
+import LinearProgress from '@mui/material/LinearProgress';
+import { generateYoutubePlaylist, OAuthGoogle, searchSpotifyPlaylist } from './services/api';
 import VideoCard from './components/VideoCard';
-
-interface SpotifyResponse {
-  tracks: {
-    items: TrackItem[];
-  };
-}
-
-interface TrackItem {
-  track: Track;
-}
-
-interface Track {
-  album: Album;
-  artists: Artist[];
-  href: string;
-  name: string;
-}
-
-interface Album {
-  href: string;
-}
-
-interface Artist {
-  external_urls: {
-    spotify: string;
-  };
-  href: string;
-  id: string;
-  name: string;
-  type: string;
-  uri: string;
-}
-
-interface YoutubeResponse {
-  etag: string,
-  items: Item[]
-}
-
-interface Item {
-  etag: string,
-  id: id,
-  kind: string,
-  snippet: Snippet
-}
-
-interface Snippet {
-  channelId: string,
-  channelTitle: string,
-  description: string,
-  title: string
-}
-
-interface id {
-  kind: string,
-  videoId: string
-}
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
   const [link, setLink] = useState<string>('')
-  // const [videos, setVideos] = useState<Map<string, Item[]>>(new Map([
-  //   ["Kelly Banda Labaredas", [
-  //     {
-  //       kind: "youtube#searchResult",
-  //       etag: "dk6zMIi34d7TlMF-3EdRLPOKLeE",
-  //       id: {
-  //         kind: "youtube#video",
-  //         videoId: "mejypuT-nIU"
-  //       },
-  //       snippet: {
-  //         channelId: "UCzeatHUmIlIuWRxbWw1nj9Q",
-  //         channelTitle: "O Melhor do Brega",
-  //         title: "Banda Labaredas - 40 Anos de Estrada (Show Completo)",
-  //         description: "Prepare-se para celebrar os 40 anos da maior banda de brega do Brasil: Labaredas! Com um currículo recheado de sucessos, ...",
-  //         publishTime: "2022-05-27T22:00:11Z",
-  //         thumbnails: {
-  //           default: {/* ... */},
-  //           medium: {/* ... */},
-  //           high: {/* ... */}
-  //         },
-  //         liveBroadcastContent: "none",
-  //         publishedAt: "2022-05-27T22:00:11Z"
-  //       }
-  //     }
-  //   ]],
-  //   ["Largado Às Traças - Ao Vivo Zé Neto & Cristiano", [
-  //     {
-  //       kind: "youtube#searchResult",
-  //       etag: "plkQVqGRJI9YYfl8L1sL1Ag7yrM",
-  //       id: {
-  //         kind: "youtube#video",
-  //         videoId: "WcTRQXtXJPs"
-  //       },
-  //       snippet: {
-  //         channelId: "UCRRu9OXVYd5clj2Bs29gUVQ",
-  //         channelTitle: "Zé Neto e Cristiano",
-  //         title: "Zé Neto e Cristiano - LARGADO ÀS TRAÇAS - Zé Neto e Cristiano Acústico",
-  //         description: "Zé Neto e Cristiano - Largado às traças Clique no link abaixo e ouça no seu APP de música favorito ...",
-  //         publishTime: "2018-01-30T12:58:01Z",
-  //         thumbnails: {
-  //           default: {/* ... */},
-  //           medium: {/* ... */},
-  //           high: {/* ... */}
-  //         },
-  //         liveBroadcastContent: "none",
-  //         publishedAt: "2018-01-30T12:58:01Z"
-  //       }
-  //     }
-  //   ]],
-  //   ["Medo Bobo - Ao Vivo Maiara & Maraisa", [
-  //     {
-  //       kind: "youtube#searchResult",
-  //       etag: "kwtGYhAHNNmKsksEjtew54dEZVI",
-  //       id: {
-  //         kind: "youtube#video",
-  //         videoId: "Jzl_nrTkfIM"
-  //       },
-  //       snippet: {
-  //         channelId: "UCULzCZWkkOb9dW8rr6dguQQ",
-  //         channelTitle: "Maiara e Maraisa",
-  //         title: "Maiara & Maraisa - Medo Bobo (Ao Vivo em Goiânia)",
-  //         description: "INSCREVA-SE NO NOSSO CANAL: https://goo.gl/8rlBhZ Para shows: (62) 3241-7163 comercial@maiaraemaraisa.com.br Ouça ...",
-  //         publishTime: "2015-08-16T23:53:02Z",
-  //         thumbnails: {
-  //           default: {/* ... */},
-  //           medium: {/* ... */},
-  //           high: {/* ... */}
-  //         },
-  //         liveBroadcastContent: "none",
-  //         publishedAt: "2015-08-16T23:53:02Z"
-  //       }
-  //     }
-  //   ]],
-  //   ["Ausência - Ao Vivo | Acústico Marília Mendonça", [
-  //     {
-  //       kind: "youtube#searchResult",
-  //       etag: "plkQVqGRJI9YYfl8L1sL1Ag7yrM",
-  //       id: {
-  //         kind: "youtube#video",
-  //         videoId: "WcTRQXtXJPs"
-  //       },
-  //       snippet: {
-  //         channelId: "UCRRu9OXVYd5clj2Bs29gUVQ",
-  //         channelTitle: "Zé Neto e Cristiano",
-  //         title: "Zé Neto e Cristiano - LARGADO ÀS TRAÇAS - Zé Neto e Cristiano Acústico",
-  //         description: "Zé Neto e Cristiano - Largado às traças Clique no link abaixo e ouça no seu APP de música favorito ...",
-  //         publishTime: "2018-01-30T12:58:01Z",
-  //         thumbnails: {
-  //           default: {/* ... */},
-  //           medium: {/* ... */},
-  //           high: {/* ... */}
-  //         },
-  //         liveBroadcastContent: "none",
-  //         publishedAt: "2018-01-30T12:58:01Z"
-  //       }
-  //     }
-  //   ]],
-  //   ["Borboletas Victor & Leo", [
-  //     {
-  //       kind: "youtube#searchResult",
-  //       etag: "4HMlQ2G5Ca-8E8hl_aY4KHctzuw",
-  //       id: {
-  //         kind: "youtube#video",
-  //         videoId: "28iW_O5qWfU"
-  //       },
-  //       snippet: {
-  //         channelId: "UCBAb_DK4GYZqZR9MFA7y2Xg",
-  //         channelTitle: "Galinha Pintadinha",
-  //         title: "Borboletinha - Galinha Pintadinha 2 - OFICIAL",
-  //         description: "Ouça em: Spotify: https://open.spotify.com/artist/070CnHC2iZh5oLpyWYPf8h Amazon Music: https://amzn.to/GalinhaPintadinha ...",
-  //         publishTime: "2009-12-07T10:36:44Z",
-  //         thumbnails: {
-  //           default: {/* ... */},
-  //           medium: {/* ... */},
-  //           high: {/* ... */}
-  //         },
-  //         liveBroadcastContent: "none",
-  //         publishedAt: "2009-12-07T10:36:44Z"
-  //       }
-  //     }
-  //   ]]
-  // ]));
-
-  const [videos, setVideos] = useState<Map<string, Item[]>>(new Map());
-
-  let tracks: TrackItem[] | null = null;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [videos, setVideos] = useState<string[]>([]);
+  const [tracks, setTracks] = useState<string[]>([]);
+  const [open, setOpen] = useState<boolean>(true);
+  const [accessToken, setAccessToken] = useState<string>('');
 
   useEffect(() => { localStorage.removeItem('token') }, [])
 
@@ -197,65 +25,60 @@ function App() {
     const playlist_id = link.split('/').pop()?.split('?')[0];
 
     await searchSpotifyPlaylist(playlist_id)
-      .then((res: SpotifyResponse) => tracks = res.tracks.items)
+      .then((res: string[]) => setTracks(res))
       .catch((err) => console.error(err))
 
     console.log(tracks)
     generatePlaylist();
   }
 
+  const OAuth = async () => {
+    const temp_session_id = uuidv4();
+    sessionStorage.setItem('temp_session_id', temp_session_id);
+
+    const channel = new BroadcastChannel('oauth_channel');
+
+    channel.onmessage = (event) => {
+      const { type, access_token, temp_session_id } = event.data;
+      const user_temp_id = sessionStorage.getItem('temp_session_id')
+
+      if (type === 'oauth_success' && access_token && user_temp_id === temp_session_id) {
+        setAccessToken(access_token)
+
+        sessionStorage.removeItem('temp_session_id')
+        channel.close();
+      }
+    };
+
+    await OAuthGoogle(temp_session_id)
+
+    return () => {
+      channel.close();
+    };
+
+  }
+
+  useEffect(() => {
+    console.log(accessToken)
+  }, [accessToken])
+
   const generatePlaylist = async () => {
     if (!tracks) return;
+    setLoading(true)
 
-    const searchFields = tracks.map((value) => {
-      const artists: string = value.track.artists.map(artist => artist.name).join(", ");
-
-      return value.track.name + " " + artists;
-    });
-    searchFields.forEach((trackTitle) => {
-      generateYoutubePlaylist(trackTitle)
-        .then((res) => {
-          if (res) {
-            if (!res.data) return;
-
-            console.log("res:", res.data)
-
-            const newVideos = new Map(videos);
-            console.log(newVideos);
-
-            if (!newVideos.has(trackTitle)) {
-              newVideos.set(trackTitle, []);
-            }
-
-            newVideos.set(trackTitle, res.data.items);
-
-            setVideos((prevVideos) => {
-              const updatedVideos = new Map(prevVideos);
-
-              if (!updatedVideos.has(trackTitle)) {
-                updatedVideos.set(trackTitle, []);
-              }
-
-              updatedVideos.set(trackTitle, res.data.items);
-
-              return updatedVideos;
-            });
-            
-          } else {
-            alert('Erro ao buscar vídeos no Youtube: Cota de API excedida ou erro interno. Tente novamente mais tarde.')
-            console.error("Nenhum vídeo encontrado para:", trackTitle);
-          }
-        })
-        .catch((err) => console.error("Erro inesperado:", err));
-    });
-
-    useEffect(() => {
-      console.log("Estado atualizado:", videos);
-    }, [videos]);
-
-
-    console.log(searchFields);
+    generateYoutubePlaylist(tracks)
+      .then((res) => {
+        setVideos(res ? res : [])
+        setLoading(false)
+        setOpen(true);
+      })
+      .catch((err) => alert(err))
   }
+
+
+  useEffect(() => {
+    console.log("Estado atualizado:", videos);
+  }, [videos]);
 
   return (
     <Box sx={{
@@ -266,26 +89,24 @@ function App() {
       flexDirection: 'column',
       alignItems: 'center',
       position: 'relative',
-
-      // Efeito glass com textura
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      backgroundImage: `url(${background})`, // textura sutil
-      backgroundSize: 'auto',
-      backdropFilter: 'blur(10px) grayscale(0.2)',
-      WebkitBackdropFilter: 'blur(10px) grayscale(0.2)',
-      boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-      border: '1px solid rgba(255, 255, 255, 0.18)',
+      backgroundColor: '#1A2730',
+      backgroundImage: `
+    radial-gradient(circle, rgba(0,255,255,0.1) 1px, transparent 1px),
+    radial-gradient(circle, rgba(0,255,255,0.08) 1px, transparent 1px)
+  `,
+      backgroundSize: '30px 30px, 60px 60px',
+      backgroundPosition: '0 0, 15px 15px',
+      boxShadow: 'inset 0 0 70px rgba(0,255,255,0.04)',
+      color: '#00f6ff',
     }}>
-
-
       <Typography
         sx={{
-          fontFamily: 'Monoton',
+          fontFamily: 'Uncial Antiqua',
           position: 'absolute',
           color: '#ffffff',
           maxHeight: '15%',
           textWrap: 'nowrap',
-          fontSize: { xs: '2.0rem', md: '2.5rem' },
+          fontSize: { xs: '2.15rem', md: '2.75rem' },
           top: 80,
           left: '50%',
           transform: 'translateX(-50%)',
@@ -395,21 +216,49 @@ function App() {
           />
 
         </Paper>
-        <Box sx={{
-          width: '100%',
-          maxWidth: '1200px',
-          overflow: 'auto', // Adiciona rolagem caso o conteúdo ultrapasse
-          padding: '20px',
-        }}>
-        </Box>
-
-        {videos && (
-          <Box sx={{ marginBottom: '20px' }}>
-            <Stack direction="row" flexWrap="wrap" gap={5} alignContent={'center'} justifyContent={'center'} >
-                <VideoCard videos={videos} />
-            </Stack>
+        {loading &&
+          <Box sx={{ width: '100%', my: 6 }}>
+            <Typography variant='subtitle1' sx={{ mb: 2 }}>Processando... Isso levará aproximadamente {Math.floor((tracks.length * 5) / 60)} minutos. Aguarde.</Typography>
+            <LinearProgress />
           </Box>
-        )}
+        }
+        <Box sx={{ marginBottom: '20px', my: 3 }}>
+          <Stack direction="column" alignContent={'center'} justifyContent={'center'} >
+            <Collapse in={open}>
+              {accessToken == '' ? (
+                <Alert
+                  severity='info'
+                  action={
+                    <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
+                      <IconButton
+                        aria-label="close"
+                        color="inherit"
+                        size="small"
+                        onClick={() => {
+                          setOpen(false);
+                        }}
+                      >
+                        <CloseIcon fontSize="inherit" />
+                      </IconButton>
+                    </Box>
+                  }
+                  sx={{ my: 3 }}
+                >
+                  <Typography textAlign={'left'} variant='subtitle2'>Faça login com uma conta Google para salvar a playlist completa no Youtube ou continue com um limite de até 200 músicas geradas.</Typography>
+                  <Button size='small' variant='contained' sx={{ color: 'white', display: 'flex', right: 0, ml: 'auto', mt: 1 }} onClick={() => OAuth()}>Login com Google</Button>
+                </Alert>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+                  <Button size='small' variant='outlined' sx={{ color: 'white', borderColor: 'white' ,display: 'flex', left: 0, mt: 1 }} onClick={() => OAuth()}>Trocar de conta</Button>
+                  <Button size='small' disabled={videos.length == 0} variant='contained' sx={{ color: 'white', display: 'flex', right: 0, mt: 1 }} onClick={() => OAuth()}>Salvar playlist</Button>
+                </Box>
+              )}
+            </Collapse>
+            {videos.length > 0 && (
+              <VideoCard videos={videos} />
+            )}
+          </Stack>
+        </Box>
       </Stack >
     </Box >
   )

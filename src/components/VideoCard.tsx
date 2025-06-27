@@ -1,45 +1,23 @@
-import { Box, Paper, Typography } from "@mui/material";
+import { Paper } from "@mui/material";
 import { useEffect, useState } from "react";
 
-interface id {
-    kind: string,
-    videoId: string
-}
-
-interface Item {
-    etag: string,
-    id: id,
-    kind: string,
-    snippet: Snippet
-}
-
-interface Snippet {
-    channelId: string,
-    channelTitle: string,
-    description: string,
-    title: string
-}
-
-
 interface VideoCardProps {
-    videos: Map<string, Item[]>
+    videos: string[]
 }
 
 const VideoCard: React.FC<VideoCardProps> = ({ videos }) => {
-    const [videosId, setVideosId] = useState<string[]>([]);
-    const [firstVideo, setFirstVideo] = useState<string>();
-    const [playlist, setPlaylist] = useState<string>();
     const [embedUrl, setEmbedUrl] = useState<string>();
 
     useEffect(() => {
         const ids: string[] = [];
 
-        Array.from(videos).forEach(([, items]) => {
-            items.forEach((item) => {
-                ids.push(item.id.videoId);
-            });
-        });
-
+        videos.forEach((video) => {
+            if (video.trim()){
+                const id = video.split('=')
+                ids.push(id[1]);
+                console.log(id)
+            }
+        })
         setEmbedUrl(`https://www.youtube.com/embed/${ids[0]}?autoplay=1&playlist=${ids.slice(1).join(',')}`)
     }, [videos]);
 
@@ -51,12 +29,13 @@ const VideoCard: React.FC<VideoCardProps> = ({ videos }) => {
         <Paper elevation={5}
             sx={{
                 display: 'flex',
+                zIndex: 100,
                 backgroundColor: 'transparent',
-                paddingTop: '15px',
-                paddingBottom: '10px',
+                paddingY: '10px',
                 paddingX: '10px',
+                marginX: 'auto',
                 flexDirection: 'column',
-                width: { xs: '95%', md: '600px' },
+                width: { xs: '95%', md: '95%' },
                 height: { xs: '250px', md: '350px' }
             }}>
             {embedUrl && (
