@@ -9,7 +9,6 @@ interface tokenProps {
 export const getSpotifyToken = async () => {
     try {
         const res = await axios.post<tokenProps>('http://localhost:8000/spotify/get-token/');
-        console.log(res)
         localStorage.setItem('token', res.data.access_token);
         return res.data.access_token;
     } catch (err) {
@@ -64,7 +63,6 @@ export const searchSpotifyPlaylist = async (playlist_id: string | undefined) => 
 };
 
 export const generateYoutubePlaylist = async (searchFields: string[]) => {
-    console.log("chegou: " + searchFields)
     return axios.post<string[]>(`http://localhost:8000/crawler/youtube-search/`, { search_data: searchFields }, {
         headers: {
             'Content-Type': 'application/json',

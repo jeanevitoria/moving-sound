@@ -27,15 +27,10 @@ function App() {
     await searchSpotifyPlaylist(playlist_id)
       .then((res: string[]) => setTracks(res))
       .catch((err) => console.error(err))
-
-    console.log(tracks)
-    generatePlaylist();
   }
 
-  useEffect(() => {
-    console.log(accessToken)
-  }, [accessToken])
-
+  useEffect(() => { generatePlaylist(); }, [tracks])
+  
   const generatePlaylist = async () => {
     if (!tracks) return;
     setLoading(true)
@@ -48,11 +43,6 @@ function App() {
       })
       .catch((err) => alert(err))
   }
-
-
-  useEffect(() => {
-    console.log("Estado atualizado:", videos);
-  }, [videos]);
 
   return (
     <Box sx={{
@@ -151,17 +141,19 @@ function App() {
             onChange={(e) => setLink(e.target.value)}
             variant="filled"
             InputProps={{
-              disableUnderline: true, // Remove a linha inferior padrão
+              disableUnderline: true,
               endAdornment: (
-                <InputAdornment
-                  position="end"
-                  onClick={searchPlaylist}
-                  sx={{
-                    "&:hover": { color: "#000", cursor: "pointer" },
-                    zIndex: 1000,
-                  }}
-                >
-                  <SwapHorizIcon />
+                <InputAdornment position="end">
+                  <IconButton
+                    edge="end"
+                    onClick={searchPlaylist}
+                    sx={{
+                      color: '#000',
+                      "&:hover": { color: "#555" },
+                    }}
+                  >
+                    <SwapHorizIcon />
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
@@ -199,26 +191,26 @@ function App() {
         <Box sx={{ marginBottom: '20px', my: 3 }}>
           <Stack direction="column" alignContent={'center'} justifyContent={'center'} >
             <Collapse in={open}>
-                <Alert
-                  severity='info'
-                  action={
-                    <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
-                      <IconButton
-                        aria-label="close"
-                        color="inherit"
-                        size="small"
-                        onClick={() => {
-                          setOpen(false);
-                        }}
-                      >
-                        <CloseIcon fontSize="inherit" />
-                      </IconButton>
-                    </Box>
-                  }
-                  sx={{ my: 3 }}
-                >
-                  <Typography textAlign={'left'} variant='subtitle2'>Devido a limitações da API do Youtube, há um limite de 200 músicas por playlist.</Typography>
-                </Alert>
+              <Alert
+                severity='info'
+                action={
+                  <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column' }}>
+                    <IconButton
+                      aria-label="close"
+                      color="inherit"
+                      size="small"
+                      onClick={() => {
+                        setOpen(false);
+                      }}
+                    >
+                      <CloseIcon fontSize="inherit" />
+                    </IconButton>
+                  </Box>
+                }
+                sx={{ my: 3 }}
+              >
+                <Typography textAlign={'left'} variant='subtitle2'>Devido a limitações da API do Youtube, há um limite de 200 músicas por playlist.</Typography>
+              </Alert>
             </Collapse>
             {videos.length > 0 && (
               <VideoCard videos={videos} />
