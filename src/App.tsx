@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Box, Button, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Box, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Alert from '@mui/material/Alert';
@@ -9,7 +9,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import LinearProgress from '@mui/material/LinearProgress';
 import { generateYoutubePlaylist, searchSpotifyPlaylist } from './services/api';
 import VideoCard from './components/VideoCard';
-import { v4 as uuidv4 } from 'uuid';
 
 function App() {
   const [link, setLink] = useState<string>('')
@@ -17,7 +16,6 @@ function App() {
   const [videos, setVideos] = useState<string[]>([]);
   const [tracks, setTracks] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(true);
-  const [accessToken, setAccessToken] = useState<string>('');
 
   useEffect(() => { localStorage.removeItem('token') }, [])
 
@@ -30,7 +28,7 @@ function App() {
   }
 
   useEffect(() => { generatePlaylist(); }, [tracks])
-  
+
   const generatePlaylist = async () => {
     if (!tracks) return;
     setLoading(true)
