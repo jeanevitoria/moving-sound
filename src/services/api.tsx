@@ -8,7 +8,7 @@ interface tokenProps {
 
 export const getSpotifyToken = async () => {
     try {
-        const res = await axios.post<tokenProps>('http://localhost:8000/spotify/get-token/');
+        const res = await axios.post<tokenProps>('https://moving-sound-back-production.up.railway.app/spotify/get-token/');
         localStorage.setItem('token', res.data.access_token);
         return res.data.access_token;
     } catch (err) {
@@ -18,7 +18,7 @@ export const getSpotifyToken = async () => {
 };
 
 const apiSpotify = axios.create({
-    baseURL: 'http://localhost:8000/spotify/playlist/',
+    baseURL: 'https://moving-sound-back-production.up.railway.app/spotify/playlist/',
     headers: {
         'Content-Type': 'application/json',
     }
@@ -63,7 +63,7 @@ export const searchSpotifyPlaylist = async (playlist_id: string | undefined) => 
 };
 
 export const generateYoutubePlaylist = async (searchFields: string[]) => {
-    return axios.post<string[]>(`http://localhost:8000/crawler/youtube-search/`, { search_data: searchFields }, {
+    return axios.post<string[]>(`https://moving-sound-back-production.up.railway.app/crawler/youtube-search/`, { search_data: searchFields }, {
         headers: {
             'Content-Type': 'application/json',
         }

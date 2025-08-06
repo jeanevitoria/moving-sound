@@ -30,7 +30,7 @@ function App() {
   useEffect(() => { generatePlaylist(); }, [tracks])
 
   const generatePlaylist = async () => {
-    if (!tracks) return;
+    if (!tracks || tracks.length === 0) return;
     setLoading(true)
 
     generateYoutubePlaylist(tracks)
